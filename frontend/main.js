@@ -15,7 +15,9 @@ $(function(){
   // deploying the application to a live production environment, change to
   // https://backend-dot-<PROJECT_ID>.appspot.com as specified in the
   // backend's app.yaml file.
-  var backendHostUrl = 'https://backend-dot-baezos-157223.appspot.com';
+  var backendHostUrl = 'http://localhost:8081';
+
+  //var backendHostUrl = 'https://backend-dot-baezos-157223.appspot.com';
 
   // Initialize Firebase
   // TODO: Replace with your project's customized code snippet
@@ -47,11 +49,24 @@ $(function(){
         user.getToken().then(function(idToken) {
           userIdToken = idToken;
 
-          /* Now that the user is authenicated, fetch the notes. */
-          fetchNotes();
-
           $('#user').text(welcomeName);
           $('#logged-in').show();
+
+          var partner = fetchPartner();
+
+          if(partner.exists) {
+            /* Now that the user is authenicated and has a partner, fetch the notes. */
+            $('#no-partner').hide();
+
+            $('#partner').text(partner);
+
+            fetchNotes(partner);
+
+            $('#yes-partner').show();
+          } else {
+            $('#yes-partner').hide();
+            $('#no-partner').show();
+          }
 
         });
 
@@ -97,23 +112,20 @@ $(function(){
       headers: {
         'Authorization': 'Bearer ' + userIdToken
       }
-    }).then(function(data){
-      $('#partner-container').empty();
-      // Iterate over user data to display user's notes from database.
-      data.forEach(function(note){
-        $('#partner-container').append($('<p>').text(note.message));
-      });
+    }).then(function(partner){
+      return partner;
     });
   }
+  // [END fetchPartner]
 
   // [START fetchNotes]
   // Fetch notes from the backend.
-  function fetchNotes() {
+  function fetchNotes(partner) {
     $.ajax(backendHostUrl + '/notes', {
       /* Set header for the XMLHttpRequest to get data from the web server
       associated with userIdToken */
       headers: {
-        'Authorization': 'Bearer ' + userIdToken
+        'Authorization': 'Bearer ' + partner.id
       }
     }).then(function(data){
       $('#notes-container').empty();
@@ -172,22 +184,23 @@ $(function(){
   savePartnerBtn.click(function(event) {
     event.preventDefault();
 
-    var noteField = $('#partner-content');
-    var note = noteField.val();
-    noteField.val("");
+    var partnerField = $('#partner-content');
+    var partner = partnerField.val();
+    partnerField.val("");
 
-    /* Send note data to backend, storing in database with existing data
+    /* Send partner data to backend, storing in database with existing data
     associated with userIdToken */
     $.ajax(backendHostUrl + '/partner', {
       headers: {
         'Authorization': 'Bearer ' + userIdToken
       },
       method: 'POST',
-      data: JSON.stringify({'message': note}),
+      data: JSON.stringify({'message': partner}),
       contentType : 'application/json'
     }).then(function(){
+      alert("Partner confirmation sent.");
       // Refresh notebook display.
-      fetchPartner();
+      //fetchPartner();
     });
 
   });
