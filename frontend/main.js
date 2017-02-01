@@ -18,7 +18,6 @@ $(function(){
   var backendHostUrl = 'https://backend-dot-baezos-157223.appspot.com';
 
   // Initialize Firebase
-  // TODO: Replace with your project's customized code snippet
   var config = {
     apiKey: "AIzaSyDiemOwOcTa7l6JPoZDjYxYPtPaMcN6CKU",
     authDomain: "baezos-157223.firebaseapp.com",
@@ -52,6 +51,21 @@ $(function(){
 
           $('#user').text(welcomeName);
           $('#logged-in').show();
+
+          var partner = fetchPartner();
+
+          if(partner.exists) {
+            /* Now that the user is authenicated and has a partner, fetch the notes. */
+            $('#no-partner').hide();
+            $('#partner').text(partner.name);
+
+            fetchNotes(partner);
+
+            $('#yes-partner').show();
+          } else {
+            $('#yes-partner').hide();
+            $('#no-partner').show();
+          }
 
         });
 
@@ -91,7 +105,7 @@ $(function(){
   // [START fetchPartner]
   // Fetch partners from the backend.
   function fetchPartner() {
-    $.ajax(backendHostUrl + '/partner', {
+    $.ajax(backendHostUrl + '/partners', {
       /* Set header for the XMLHttpRequest to get data from the web server
       associated with userIdToken */
       headers: {
@@ -178,14 +192,15 @@ $(function(){
 
     /* Send note data to backend, storing in database with existing data
     associated with userIdToken */
-    $.ajax(backendHostUrl + '/partner', {
+    $.ajax(backendHostUrl + '/partners', {
       headers: {
         'Authorization': 'Bearer ' + userIdToken
       },
       method: 'POST',
-      data: JSON.stringify({'message': note}),
+      data: JSON.stringify({'partner': partner}),
       contentType : 'application/json'
     }).then(function(){
+      alert("Partner request sent.");
       // Refresh notebook display.
       fetchPartner();
     });
