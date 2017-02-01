@@ -172,18 +172,18 @@ $(function(){
   savePartnerBtn.click(function(event) {
     event.preventDefault();
 
-    var noteField = $('#partner-content');
-    var note = noteField.val();
-    noteField.val("");
+    var partnerField = $('#partner-content');
+    var partner = partnerField.val();
+    partnerField.val("");
 
-    /* Send note data to backend, storing in database with existing data
+    /* Send partner data to backend, storing in database with existing data
     associated with userIdToken */
     $.ajax(backendHostUrl + '/partner', {
       headers: {
         'Authorization': 'Bearer ' + userIdToken
       },
       method: 'POST',
-      data: JSON.stringify({'message': note}),
+      data: JSON.stringify({'partner': partner}),
       contentType : 'application/json'
     }).then(function(){
       // Refresh notebook display.

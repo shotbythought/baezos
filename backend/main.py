@@ -42,6 +42,10 @@ class Note(ndb.Model):
     created = ndb.DateTimeProperty(auto_now_add=True)
 # [END note]
 
+class PartnerRequest(ndb.Model):
+    """NDB model class for a partner request."""
+    asker = ndb.StringProperty()
+    receiver = ndb.StringProperty()
 
 # [START query_database]
 def query_database(user_id):
@@ -66,6 +70,21 @@ def query_database(user_id):
     return note_messages
 # [END query_database]
 
+@app.route('/partner', methods=['POST', 'PUT'])
+def request_partner():
+    """Registers a partner and adds a request into the database"""
+    id_token = request.headers['Authorization'].split(' ').pop()
+    claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
+
+    if not claims:
+        return 'Unauthorized', 401
+
+    email = request.get_json()['partner']
+
+    partner_request = PartnerRequest(asker=claims['email'], receiver=email)
+    partner_request.put()
+
+    return 'OK, e-mail was sent', 200
 
 # [START list_notes]
 @app.route('/notes', methods=['GET'])
