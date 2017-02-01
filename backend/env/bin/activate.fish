@@ -36,7 +36,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/leekkww/Documents/Code/python-docs-samples/appengine/standard/firebase/firenotes/backend/env"
+set -gx VIRTUAL_ENV "/Users/miz/Documents/baezos/backend/env"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
