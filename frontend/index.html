@@ -34,42 +34,37 @@ Licensed under the Apache License, Version 2.0 (the "License");
 </head>
 <body>
   <div id="logged-out">
-    <h1>Bae notes</h1>
+    <h1>Firenotes</h1>
     <h3>Sign in to access your notebook</h3>
     <div id="firebaseui-auth-container"></div>
   </div>
 
   <div id="logged-in">
     <h1>Welcome, <span id="user"></span>!</h1>
-
-    <div id="no-partner">
-      You don't have a partner! Write down your partner's email.
+    <div id="form">
       <form action="" method="post">
+      Your partner is
         <div class="form-group">
-          <input type="text" id="partner-content"></input>
+          <textarea id="partner-content"></textarea>
         </div>
         <div class="form-group">
-          <button id="add-partner">Add partner</button>
+          <button id="add-partner">Save partner</button>
         </div>
       </form>
     </div>
 
-    <div id="yes-partner">
-    <h3>Enter a note and send it to your partner's notebook</h3>
-      Your partner is <span id="partner"></span>.
-      <div id="partner-container"></div>
-      <!-- TODO add change partner option here -->
-      <form action="" method="post">
-        <div class="form-group">
-          <textarea id="note-content"></textarea>
-        </div>
-        <div class="form-group">
-          <button id="add-note">Save note</button>
-          
-        </div>
-      </form>
-      <button id="sign-out">Sign out</button> 
-    </div>
+    <h3>Enter a note and save it to your personal notebook</h3>
+  <div id="form">
+    <form action="" method="post">
+      <div class="form-group">
+        <textarea id="note-content"></textarea>
+      </div>
+      <div class="form-group">
+        <button id="add-note">Save note</button>
+        <button id="sign-out">Sign out</button> 
+      </div>
+    </form>
+  </div>
 
   <div id="notes-container"></div>
   </div>
