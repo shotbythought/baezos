@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cp -r frontend frontend_local
+sed -i '' 's|https://backend-dot-baezos-157223.appspot.com|http://localhost:8081|' frontend_local/main.js
+dev_appserver.py frontend_local/app.yaml backend/app.yaml
