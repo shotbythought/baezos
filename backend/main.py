@@ -121,10 +121,14 @@ def get_partner():
     if not relationship:
         return "", 200
 
-    partner_email = relationship.partner1 if relationship.partner1 == claims['email'] else relationship.partner2
+    partner_email = relationship.partner1 if relationship.partner1 != claims['email'] else relationship.partner2
     partner = User.query(User.email == partner_email).get()
 
-    return jsonify(partner)
+    return jsonify({
+        'email': partner.email,
+        'name': partner.name,
+        'uid': partner.uid
+        })
 
 
 @app.route('/partners', methods=['POST', 'PUT'])
@@ -141,7 +145,7 @@ def request_partner():
     user = User.query(User.email == email).get()
 
     if user is None:
-        return 'Nonexistent partner', 401
+        return 'Nonexistent partner', 428
 
     partner_request = PartnerRequest(asker=claims['email'], receiver=email)
     partner_request.put()
