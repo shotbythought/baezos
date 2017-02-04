@@ -37,6 +37,7 @@ $(function(){
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
         $('#logged-out').hide();
+
         var name = user.displayName;
 
         /* If the provider gives a display name, use the name for the
@@ -46,26 +47,23 @@ $(function(){
         user.getToken().then(function(idToken) {
           userIdToken = idToken;
 
+          /* Add user data to database. */
+          $.ajax(backendHostUrl + '/users', {
+            headers: {
+              'Authorization': 'Bearer ' + userIdToken
+            },
+            method: 'POST'
+          })
+
           /* Now that the user is authenicated, fetch the notes. */
           fetchNotes();
 
           $('#user').text(welcomeName);
           $('#logged-in').show();
 
-          var partner = fetchPartner();
+          fetchPartnerAndNotes();
 
-          if(partner.exists) {
-            /* Now that the user is authenicated and has a partner, fetch the notes. */
-            $('#no-partner').hide();
-            $('#partner').text(partner.name);
-
-            fetchNotes(partner);
-
-            $('#yes-partner').show();
-          } else {
-            $('#yes-partner').hide();
-            $('#no-partner').show();
-          }
+          
 
         });
 
@@ -104,19 +102,30 @@ $(function(){
 
   // [START fetchPartner]
   // Fetch partners from the backend.
-  function fetchPartner() {
+  function fetchPartnerAndNotes() {
     $.ajax(backendHostUrl + '/partners', {
       /* Set header for the XMLHttpRequest to get data from the web server
       associated with userIdToken */
       headers: {
         'Authorization': 'Bearer ' + userIdToken
       }
-    }).then(function(data){
-      $('#partner-container').empty();
-      // Iterate over user data to display user's notes from database.
-      data.forEach(function(note){
-        $('#partner-container').append($('<p>').text(note.message));
-      });
+    }).then(function(partner_data){
+      if(partner_data != "") {
+        /* Now that the user is authenicated and has a partner, fetch the notes. */
+        $('#no-partner').hide();
+        $('#partner').text(partner['name']);
+
+        $('#partner-container').empty();
+        // Iterate over user data to display user's notes from database.
+        $('#partner-container').append($('<p>').text(partner_data['name']));
+
+        $('#yes-partner').show();
+      } else {
+        $('#yes-partner').hide();
+        $('#no-partner').show();
+      }
+
+      
     });
   }
 
@@ -202,7 +211,11 @@ $(function(){
     }).then(function(){
       alert("Partner request sent.");
       // Refresh notebook display.
-      fetchPartner();
+      fetchPartnerAndNotes();
+    },function(response) {
+      if(response['status'] = 428) {
+        alert('Nonexistent partner');
+      }
     });
 
   });
