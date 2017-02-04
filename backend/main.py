@@ -94,7 +94,7 @@ def add_user():
     if not claims:
         return 'Unauthorized', 401
 
-    user = Relationship.query(Relationship.uid == claims['sub']).get()
+    user = User.query(User.uid == claims['sub']).get()
 
     if not user:
         new_user = User(name=claims['name'], email=claims['email'], uid=claims['sub'])
@@ -113,7 +113,7 @@ def get_partner():
     if not claims:
         return 'Unauthorized', 401
 
-    query = Relationship.query(nbd.OR(Relationship.partner1 == claims['email'],
+    query = Relationship.query(ndb.OR(Relationship.partner1 == claims['email'],
                                       Relationship.partner2 == claims['email']))
 
     relationship = query.get()
@@ -122,8 +122,9 @@ def get_partner():
         return "", 200
 
     partner_email = relationship.partner1 if relationship.partner1 == claims['email'] else relationship.partner2
+    partner = User.query(User.email == partner_email).get()
 
-    return partner_email, 200
+    return jsonify(partner)
 
 
 @app.route('/partners', methods=['POST', 'PUT'])
@@ -136,6 +137,11 @@ def request_partner():
         return 'Unauthorized', 401
 
     email = request.get_json()['partner']
+
+    user = User.query(User.email == email).get()
+
+    if user is None:
+        return 'Nonexistent partner', 401
 
     partner_request = PartnerRequest(asker=claims['email'], receiver=email)
     partner_request.put()

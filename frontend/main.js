@@ -38,13 +38,6 @@ $(function(){
       if (user) {
         $('#logged-out').hide();
 
-        $.ajax(backendHostUrl + '/users', {
-          headers: {
-            'Authorization': 'Bearer ' + userIdToken
-          },
-          method: 'POST',
-        })
-        
         var name = user.displayName;
 
         /* If the provider gives a display name, use the name for the
@@ -53,6 +46,13 @@ $(function(){
 
         user.getToken().then(function(idToken) {
           userIdToken = idToken;
+
+          $.ajax(backendHostUrl + '/users', {
+            headers: {
+              'Authorization': 'Bearer ' + userIdToken
+            },
+            method: 'POST'
+          })
 
           /* Now that the user is authenicated, fetch the notes. */
           fetchNotes();
