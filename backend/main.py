@@ -46,6 +46,21 @@ class PartnerRequest(ndb.Model):
     """NDB model class for a partner request."""
     asker = ndb.StringProperty()
     receiver = ndb.StringProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+
+class Relationship(ndb.Model):
+    """NDB model class for a relationship."""
+    partner1 = ndb.StringProperty()
+    partner2 = ndb.StringProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+
+class User(ndb.Model):
+    """NDB model class for a user."""
+    name = ndb.StringProperty()
+    email = ndb.StringProperty()
+    uid = ndb.StringProperty()
+    created = ndb.DateTimeProperty(auto_now_add=True)
+
 
 # [START query_database]
 def query_database(user_id):
@@ -70,7 +85,48 @@ def query_database(user_id):
     return note_messages
 # [END query_database]
 
-@app.route('/partner', methods=['POST', 'PUT'])
+@app.route('/users', methods=['POST', 'PUT'])
+def add_user():
+    """Adds a user"""
+    id_token = request.headers['Authorization'].split(' ').pop()
+    claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
+
+    if not claims:
+        return 'Unauthorized', 401
+
+    user = Relationship.query(Relationship.uid == claims['sub']).get()
+
+    if not user:
+        new_user = User(name=claims['name'], email=claims['email'], uid=claims['sub'])
+        new_user.put()
+
+    return 'Added user', 200
+
+
+
+@app.route('/partners', methods=['GET'])
+def get_partner():
+    """Gets someone's partner"""
+    id_token = request.headers['Authorization'].split(' ').pop()
+    claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
+
+    if not claims:
+        return 'Unauthorized', 401
+
+    query = Relationship.query(nbd.OR(Relationship.partner1 == claims['email'],
+                                      Relationship.partner2 == claims['email']))
+
+    relationship = query.get()
+
+    if not relationship:
+        return "", 200
+
+    partner_email = relationship.partner1 if relationship.partner1 == claims['email'] else relationship.partner2
+
+    return partner_email, 200
+
+
+@app.route('/partners', methods=['POST', 'PUT'])
 def request_partner():
     """Registers a partner and adds a request into the database"""
     id_token = request.headers['Authorization'].split(' ').pop()
@@ -84,7 +140,15 @@ def request_partner():
     partner_request = PartnerRequest(asker=claims['email'], receiver=email)
     partner_request.put()
 
-    return 'OK, e-mail was sent', 200
+    query = PartnerRequest.query(PartnerRequest.asker == email, PartnerRequest.receiver == claims['email'])
+
+    if query.get() != None:
+        partners = sorted([email, claims['email']])
+        relationship = Relationship(partner1=partners[0], partner2=partners[1])
+
+        relationship.put()
+
+    return 'OK', 200
 
 # [START list_notes]
 @app.route('/notes', methods=['GET'])
