@@ -37,6 +37,14 @@ $(function(){
     firebase.auth().onAuthStateChanged(function(user) {
       if (user) {
         $('#logged-out').hide();
+
+        $.ajax(backendHostUrl + '/users', {
+          headers: {
+            'Authorization': 'Bearer ' + userIdToken
+          },
+          method: 'POST',
+        })
+        
         var name = user.displayName;
 
         /* If the provider gives a display name, use the name for the
